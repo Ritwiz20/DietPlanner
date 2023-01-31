@@ -18,7 +18,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ECHO'] = False
     app.secret_key = SECRET_KEY
-
+    # /done
 
     db.init_app(app)
     print("DB initialized successfully")
