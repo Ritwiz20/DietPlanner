@@ -27,9 +27,25 @@ def create_app():
 
 
     with app.app_context():
+        @app.route('/signup', methods=['POST'])
+        def signup():
+            data = request.form.to_dict(flat=True)
+
+            new_user = User(
+                name = data['name'],
+                email = data['email'],
+                password = data['password'],
+                phone_number = data['phone_number']
+            )
+
+            db.session.add(new_user)
+            db.session.commit()
+            return jsonify(msg = "User signed up successfully")
+
+
 
         # db.drop_all()
-        db.create_all()
+        # db.create_all()
         db.session.commit()
 
         return app
