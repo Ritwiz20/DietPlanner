@@ -96,6 +96,16 @@ def create_app():
         # db.create_all()
         db.session.commit()
 
+       
+        @app.route("/delete", methods=['POST'])
+        def delete():
+                name = request.args.get('name')
+                user=User.query.filter_by(name=name).first()
+                
+                db.session.delete(user)
+                db.session.commit()
+                return jsonify({'User': "deleted", "Name":name})
+
         return app
 
 if __name__ == '__main__':
