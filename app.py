@@ -56,13 +56,6 @@ def create_app():
             except AttributeError:
                 return jsonify({'status':'email not found'})
 
-        
-#         - Add meals taken
-# - Add time
-# - Add meal calorie
-# - Display table of meals today
-# - Display total calories
-       
 
         @app.route("/calorie_intake", methods=['POST'])
         def calorie_intake():
@@ -70,7 +63,7 @@ def create_app():
             name=request.args.get('name')
             user=User.query.filter_by(name=name).first()
             data=request.form.to_dict(flat=True)
-            # print(calorie_data)
+
             # for data in calorie_data:
             new_meal=Meals(
                     meal=data["meal"],
