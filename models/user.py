@@ -9,9 +9,9 @@ class User(db.Model):
     phone_number = db.Column(db.String(200), nullable=False)
 
     
-    profile =db.relationship('Profile', backref='user')
-    plan =db.relationship('Plan', backref='user')
-    meals =db.relationship('Meals', backref='user')
+    profile =db.relationship('Profile', backref='user', cascade='all, delete, delete-orphan')
+    plan =db.relationship('Plan', backref='user', cascade='all, delete, delete-orphan')
+    meals =db.relationship('Meals', backref='user',cascade='all, delete, delete-orphan')
 
 
     def verify_password(self, passw):
