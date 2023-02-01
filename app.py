@@ -42,9 +42,9 @@ def create_app():
             return jsonify(msg = "User signed up successfully")
 
 
-        @app.route('/login', methods=['POST'])
-        def login():
-            data = request.form.to_dict(flat=True)
+            if email in User.email :
+                return jsonify(msg = "Logged in successfully")
+            return jsonify(msg = "invalid email or password")
 
             email = data.get('email')
             password = data.get('password')
