@@ -1,6 +1,8 @@
 from config import db
+# from config import db,base
 
 class User(db.Model):
+# class User(base):
     __tablename__ = 'user'  
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
