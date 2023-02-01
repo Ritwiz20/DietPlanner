@@ -106,6 +106,8 @@ def create_app():
                 db.session.commit()
                 return jsonify({'User': "deleted", "Name":name})
 
+        
+
         return app
 
 if __name__ == '__main__':
