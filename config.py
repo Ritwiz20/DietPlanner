@@ -14,6 +14,7 @@ db_string = "postgresql+psycopg2://postgres:password@localhost:5432/dietPlanner"
 
 my_db = create_engine(db_string)
 
+
 Session = sessionmaker(db)
 sess =  Session()
 # base = declarative_base()
