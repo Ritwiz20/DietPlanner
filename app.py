@@ -59,7 +59,6 @@ def create_app():
         def get_profile():
             recv_name = request.args.get('name')
             user = User.query.filter_by(name = recv_name).first()
-            # print(user)
 
             data = request.form.to_dict(flat=True)
             new_profile = Profile(
@@ -80,7 +79,6 @@ def create_app():
         def create_plan():
             recv_name = request.args.get('name')
             user = User.query.filter_by(name = recv_name).first()
-            # print(user)
 
             data = request.form.to_dict(flat=True)
             new_plan = Plan(
@@ -93,7 +91,6 @@ def create_app():
             db.session.commit()
             return jsonify(msg = "Plan created successfully")
 
-                
 
         # db.drop_all()
         # db.create_all()
@@ -104,4 +101,3 @@ def create_app():
 if __name__ == '__main__':
     app = create_app()
     app.run(host='0.0.0.0', port='4545', debug=True)
-
