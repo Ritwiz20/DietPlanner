@@ -18,7 +18,6 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ECHO'] = False
     app.secret_key = SECRET_KEY
-    # /done
 
     db.init_app(app)
     print("DB initialized successfully")
@@ -42,10 +41,20 @@ def create_app():
             db.session.commit()
             return jsonify(msg = "User signed up successfully")
 
+        @app.route("/login", methods=['POST'])
+        def login():
+            data = request.form.to_dict(flat=True)
+            try:
+                user = User.query.filter_by(email=data['email']).first()
+                if user.verify_password(data['password']):
+                    return jsonify({'status':'success'})
+                else:
+                  return jsonify({'status': 'fail'})
+            except AttributeError:
+                return jsonify({'status':'email not found'})
 
-
-        # db.drop_all()
-        # db.create_all()
+        db.drop_all()
+        db.create_all()
         db.session.commit()
 
         return app
