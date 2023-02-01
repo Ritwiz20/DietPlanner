@@ -4,6 +4,7 @@ from config import db, SECRET_KEY
 from os import path, getcwd, environ
 from dotenv import load_dotenv
 
+
 from models.user import User
 from models.profile import Profile
 from models.plan import Plan
@@ -14,9 +15,9 @@ load_dotenv(path.join(getcwd(), '.env'))
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('DB_URI')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SQLALCHEMY_ECHO'] = False
+    app.config["SQLALCHEMY_DATABASE_URI"] = environ.get("DB_URI")
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SQLALCHEMY_ECHO"] = False
     app.secret_key = SECRET_KEY
 
 
@@ -30,17 +31,57 @@ def create_app():
         @app.route('/signup', methods=['POST'])
         def signup():
             data = request.form.to_dict(flat=True)
+            print(data)
 
             new_user = User(
-                name = data['name'],
-                email = data['email'],
-                password = data['password'],
-                phone_number = data['phone_number']
+                name = data["name"],
+                email = data["email"],
+                password = data["password"],
+                phone_number = data["phone_number"]
             )
 
             db.session.add(new_user)
             db.session.commit()
-            return jsonify(msg = "User signed up successfully")
+            return "User signed up successfully"
+
+        @app.route("/login", methods=['POST'])
+        def login():
+            data = request.form.to_dict(flat=True)
+            try:
+                user = User.query.filter_by(email=data['email']).first()
+                if user.verify_password(data['password']):
+                    return jsonify({'status':'success'})
+                else:
+                  return jsonify({'status': 'fail'})
+            except AttributeError:
+                return jsonify({'status':'email not found'})
+
+        
+#         - Add meals taken
+# - Add time
+# - Add meal calorie
+# - Display table of meals today
+# - Display total calories
+       
+
+        @app.route("/calorie_intake", methods=['POST'])
+        def calorie_intake():
+
+            name=request.args.get('name')
+            user=User.query.filter_by(name=name).first()
+            data=request.form.to_dict(flat=True)
+            # print(calorie_data)
+            # for data in calorie_data:
+            new_meal=Meals(
+                    meal=data["meal"],
+                    calorie=data["calorie"],
+                    time=data["time"],
+                    user_id=user.id 
+                )
+            db.session.add(new_meal)
+            db.session.commit()
+            return jsonify({'status':'calorie taken'})
+
 
 
 

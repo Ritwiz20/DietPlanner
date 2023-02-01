@@ -12,3 +12,6 @@ class User(db.Model):
     profile =db.relationship('Profile', backref='user')
     plan =db.relationship('Plan', backref='user')
     meals =db.relationship('Meals', backref='user')
+
+    def verify_password(self, passw):
+     return self.password==passw
