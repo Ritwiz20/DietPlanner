@@ -56,10 +56,10 @@ def create_app():
             #     return jsonify(msg = "Invalid email or password")
 
 
-            @app.route('/get_profile', methods=['POST'])
-            def get_profile():
-                recv_name = request.args.get('name')
-                user = User.query.filter_by(name == recv_name).first()
+            # @app.route('/get_profile', methods=['POST'])
+            # def get_profile():
+            #     recv_name = request.args.get('name')
+            #     user = User.query.filter_by(name == recv_name).first()
                 # print(user)
 
                 # data = request.form.to_dict(flat=True)
@@ -72,19 +72,19 @@ def create_app():
                 #     workout = data['workout'],
                 # )
 
-                data = request.get_json()
-                new_profile = Profile(
-                    user_id = user.id,
-                    age = data['age'],
-                    gender = data['gender'],
-                    height = data['height'],
-                    weight = data['weight'],
-                    workout = data['workout']
-                )
+                # data = request.get_json()
+                # new_profile = Profile(
+                #     user_id = user.id,
+                #     age = data['age'],
+                #     gender = data['gender'],
+                #     height = data['height'],
+                #     weight = data['weight'],
+                #     workout = data['workout']
+                # )
 
-                db.session.add(new_profile)
-                db.session.commit()
-                return jsonify(msg = "Profile updated successfully")
+                # db.session.add(new_profile)
+                # db.session.commit()
+                # return jsonify(msg = "Profile updated successfully")
 
 
 
