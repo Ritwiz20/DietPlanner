@@ -41,12 +41,55 @@ def create_app():
             db.session.commit()
             return jsonify(msg = "User signed up successfully")
 
-        @app.route('/login',methods=['POST'])
+
+        @app.route('/login', methods=['POST'])
         def login():
             data = request.form.to_dict(flat=True)
 
             email = data.get('email')
             password = data.get('password')
+
+            user = User.query.filter_by(email=data["email"]).first()
+            if user and user.password == password:
+                return jsonify(msg = "Logged in successfully")
+            return jsonify(msg = "Invalid email or password")
+
+
+        @app.route('/get_profile', methods=['POST'])
+        def get_profile():
+            recv_name = request.args.get('name')
+            user = User.query.filter_by(name = recv_name).first()
+
+            data = request.form.to_dict(flat=True)
+            new_profile = Profile(
+                user_id = user.id,
+                age = data['age'],
+                gender = data['gender'],
+                height = data['height'],
+                weight = data['weight'],
+                workout = data['workout'],
+            )
+
+            db.session.add(new_profile)
+            db.session.commit()
+            return jsonify(msg = "Profile updated successfully")
+
+
+        @app.route('/create_plan', methods = ['POST'])
+        def create_plan():
+            recv_name = request.args.get('name')
+            user = User.query.filter_by(name = recv_name).first()
+
+            data = request.form.to_dict(flat=True)
+            new_plan = Plan(
+                user_id = user.id,
+                g_calorie = data['calorie'],
+                g_weight= data['weight'],
+                g_time = data['time'],
+            )
+            db.session.add(new_plan)
+            db.session.commit()
+            return jsonify(msg = "Plan created successfully")
 
 
         # db.drop_all()
