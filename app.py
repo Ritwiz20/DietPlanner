@@ -50,7 +50,7 @@ def create_app():
             #     email = data.get('email')
             #     password = data.get('password')
 
-            #     user = User.query.filter_by(email=email).first()
+            #     user = User.query.filter_by(email=data["email"]).first()
             #     if user and user.password == password:
             #         return jsonify(msg = "Logged in successfully")
             #     return jsonify(msg = "Invalid email or password")
@@ -60,11 +60,12 @@ def create_app():
             def get_profile():
                 recv_name = request.args.get('name')
                 user = User.query.filter_by(name == recv_name).first()
+                # print(user)
 
                 # data = request.form.to_dict(flat=True)
                 # new_profile = Profile(
                 #     user_id = user.id,
-                #     age = data['age'],
+                #     age = data['age']
                 #     gender = data['gender'],
                 #     height = data['height'],
                 #     weight = data['weight'],
@@ -78,12 +79,16 @@ def create_app():
                     gender = data['gender'],
                     height = data['height'],
                     weight = data['weight'],
-                    workout = data['workout'],
+                    workout = data['workout']
                 )
 
                 db.session.add(new_profile)
                 db.session.commit()
                 return jsonify(msg = "Profile updated successfully")
+
+
+
+                
 
         # db.drop_all()
         # db.create_all()
