@@ -41,18 +41,17 @@ def create_app():
             db.session.commit()
             return jsonify(msg = "User signed up successfully")
 
-
-            if email in User.email :
-                return jsonify(msg = "Logged in successfully")
-            return jsonify(msg = "invalid email or password")
-
-            email = data.get('email')
-            password = data.get('password')
-
-            user = User.query.filter_by(email=data["email"]).first()
-            if user and user.password == password:
-                return jsonify(msg = "Logged in successfully")
-            return jsonify(msg = "Invalid email or password")
+        @app.route("/login", methods=['POST'])
+        def login():
+            data = request.form.to_dict(flat=True)
+            try:
+                user = User.query.filter_by(email=data['email']).first()
+                if user.verify_password(data['password']):
+                    return jsonify({'status':'success'})
+                else:
+                  return jsonify({'status': 'fail'})
+            except AttributeError:
+                return jsonify({'status':'email not found'})
 
 
         @app.route('/get_profile', methods=['POST'])
@@ -84,7 +83,7 @@ def create_app():
             new_plan = Plan(
                 user_id = user.id,
                 g_calorie = data['calorie'],
-                g_weight= data['weight'],
+                g_weight= data['weight'], 
                 g_time = data['time'],
             )
             db.session.add(new_plan)
@@ -104,16 +103,6 @@ def create_app():
          # db.drop_all()
         # db.create_all()
         db.session.commit()
-
-       
-        @app.route("/delete", methods=['POST'])
-        def delete():
-                name = request.args.get('name')
-                user=User.query.filter_by(name=name).first()
-                
-                db.session.delete(user)
-                db.session.commit()
-                return jsonify({'User': "deleted", "Name":name})
 
         return app
 
