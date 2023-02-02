@@ -20,7 +20,7 @@
 # Top Features Our App Provides -
 
 - **Customizable Meal Plans**: Our diet planner product allows you to create personalized meal plans tailored to your individual dietary needs and preferences.
-- **Nutritional Guidance and Support**: Our product provides you with the guidance and support you need to reach your health and nutrition goals(PK)
+- **Nutritional Guidance and Support**: Our product provides you with the guidance and support you need to reach your health and nutrition goals.
 - **Nutritional information:** Users can access comprehensive nutritional information for a wide variety of food items, including calorie counts, protein, carbohydrates, and fat content.
 
 # Our Features -
