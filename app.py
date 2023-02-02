@@ -4,6 +4,10 @@ from config import db, SECRET_KEY, my_db
 from os import path, getcwd, environ
 from dotenv import load_dotenv
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+
 from models.user import User
 from models.profile import Profile
 from models.plan import Plan
@@ -11,6 +15,10 @@ from models.meals import Meals
 
 
 load_dotenv(path.join(getcwd(), '.env'))
+
+check_id=0
+create_db=0
+total_calories=0
 
 def create_app():
     app = Flask(__name__)
@@ -24,7 +32,7 @@ def create_app():
 
     CORS(app)
 
-
+# Signup, Log-in and Log-out
     with app.app_context():
         @app.route('/signup', methods=['POST'])
         def signup():
@@ -41,23 +49,43 @@ def create_app():
             db.session.commit()
             return jsonify(msg = "User signed up successfully")
 
+
+
         @app.route("/login", methods=['POST'])
         def login():
             data = request.form.to_dict(flat=True)
             try:
                 user = User.query.filter_by(email=data['email']).first()
                 if user.verify_password(data['password']):
+                    global check_id
+                    check_id=user.id
                     return jsonify({'status':'success'})
                 else:
                   return jsonify({'status': 'fail'})
+
             except AttributeError:
                 return jsonify({'status':'email not found'})
+        
+
+        @app.route('/logout', methods=['POST'])
+        def logout():
+            global check_id
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})
+            else :
+                check_id=0
+                return jsonify({'status':'success'})
 
 
+
+#Profile, meal and Plan completion methods
         @app.route('/get_profile', methods=['POST'])
         def get_profile():
-            recv_name = request.args.get('name')
-            user = User.query.filter_by(name = recv_name).first()
+
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})
+
+            user = User.query.filter_by(id = check_id).first()
 
             data = request.form.to_dict(flat=True)
             new_profile = Profile(
@@ -71,40 +99,273 @@ def create_app():
 
             db.session.add(new_profile)
             db.session.commit()
-            return jsonify(msg = "Profile updated successfully")
+            return jsonify({"msg": "Profile updated successfully"})
+
+
 
 
         @app.route('/create_plan', methods = ['POST'])
         def create_plan():
-            recv_name = request.args.get('name')
-            user = User.query.filter_by(name = recv_name).first()
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})            
+            
+
+            user = User.query.filter_by(id = check_id).first()
 
             data = request.form.to_dict(flat=True)
             new_plan = Plan(
                 user_id = user.id,
-                g_calorie = data['calorie'],
-                g_weight= data['weight'], 
-                g_time = data['time'],
+                g_calorie = data['g_calorie'],
+                g_weight= data['g_weight'], 
+                g_time = data['g_time'],
             )
             db.session.add(new_plan)
             db.session.commit()
-            return jsonify(msg = "Plan created successfully")
+            return jsonify({"msg":"Plan created successfully"})
+
+
+
+
+        
+        @app.route('/add_meal', methods = ['POST'])
+        def add_meal():
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})
+
+            user = User.query.filter_by(id = check_id).first()    
+            meal_data = request.get_json()   
+            for data in meal_data["data"]:
+                new_meals = Meals(
+                    meal=data["meal"],
+                    calorie=data["calorie"],
+                    time=data["time"],
+                    user_id=user.id
+                )
+                db.session.add(new_meals)
+            db.session.commit()
+            return jsonify({"msg":"Meal Added Successfully"})
+
+
+
+
+#Updation of the inserted data
+        @app.route("/update_user", methods=['PUT'])
+        def update_user():
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})            
+ 
+            update_info = request.args.get('update_info')
+
+            user=User.query.filter_by(id = check_id)
+            data = request.form.to_dict(flat=True)
+
+            user.update(
+                {getattr(User,update_info):data['value']}
+            )
+
+            db.session.commit()
+            return jsonify({"msg": "User data updated successfully"})
+
+
+
+
+
+        @app.route('/update_profile', methods=['PUT'])
+        def update_profile():
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})     
+
+            update_info = request.args.get('update_info')
+            user = User.query.filter_by(id = check_id).first()
+            profile = Profile.query.filter_by(user_id = user.id)
+
+            data = request.form.to_dict(flat=True)  
+            profile.update(
+                {getattr(Profile,update_info):data['value']}
+            )    
+
+            db.session.commit()
+            return jsonify(msg = "Profile updated successfully")
+
+
+
+        
+        @app.route('/update_plan', methods=['PUT'])
+        def update_plan():
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})
+                
+            update_info = request.args.get('update_info')
+            user = User.query.filter_by(id = check_id).first()
+            plan = Plan.query.filter_by(user_id = user.id)
+
+            data = request.form.to_dict(flat=True)
+
+            plan.update(
+                {getattr(Plan,update_info):data['value']}
+            )    
+
+            db.session.commit()
+            return jsonify(msg = "Plan updated successfully")
+
+
+
+
+
+#Ploting the data 
+        @app.route("/plot_user", methods=['GET'])
+        def plot_user():
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})
+
+            meals=Meals.query.filter_by(user_id = check_id)
+            calorie=[0]
+            time=[0]
+            cal=0
+            for m in meals:
+                cal=cal+int(m.calorie)
+                calorie.append(cal)
+                time.append(int(m.time))
+
+            global total_calories
+            total_calories=cal
+
+            goal=int(Plan.query.filter_by(user_id=check_id).first().g_calorie)
+
+            calorie = np.array(calorie)
+            time = np.array(time)
+
+            mask = calorie>=goal
+
+            plt.plot(time,calorie)
+            plt.scatter(time,calorie)
+    
+            plt.ylabel('Calorie')
+            plt.axhline(y=goal, color='red', linestyle='-')
+            plt.title("Plot of calorie intake")
+
+            plt.show()
+            return jsonify({"Plot":'Graph'})
+            
+
+
+
+
+        @app.route('/dashboard', methods=['GET'])
+        def dashboard():
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})
+            
+            user = User.query.filter_by(id=check_id).first()
+            plan = Plan.query.filter_by(user_id=user.id).first()
+            profile = Profile.query.filter_by(user_id=user.id).first()
+            meal = Meals.query.filter_by(user_id=user.id).all()
+
+            plans=[]
+            meals=[]
+
+            user_dash =  {
+                "1.Name":user.name,
+                "2.Email":user.email,
+                "3.phone_number":user.phone_number,
+                "4.Height":profile.height,
+                "5.Weight":profile.weight,
+                "6.Age":profile.age,
+                "7.Worlout Level":profile.workout
+            }
+            
+            pl = {
+                "Target calorie per day": plan.g_calorie,
+                "Target weight": plan.g_weight,
+                "Target time": plan.g_time
+            }
+            plans.append(pl)
+
+            for m in meal:
+                meal_data = {
+                    "meal":m.meal,
+                    "calorie":m.calorie,
+                    "time":m.time
+                }
+                meals.append(meal_data)
+                
+            user_dash["8.plans"]=plans
+            user_dash["9.meals"]=meals
+            user_dash["Total Calories"]=total_calories
+            return jsonify(user_dash)
 
        
+
+#Deletion methods
         @app.route("/delete_user", methods=['POST'])
         def delete_user():
-                name = request.args.get('name')
-                user=User.query.filter_by(name=name).first()
-                
-                db.session.delete(user)
-                db.session.commit()
-                return jsonify({'User': "deleted", "Name":name})
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})            
+            
+            user=User.query.filter_by(id = check_id).first()
+            name=user.name
+            db.session.delete(user)
+            db.session.commit()
+            return jsonify({'User': "deleted", "Name": name})
 
-         # db.drop_all()
-        # db.create_all()
+        
+
+        @app.route("/delete_plan", methods=["POST"])
+        def delete_plan():
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})
+
+            plan=Plan.query.filter_by(user_id = check_id).first()
+            db.session.delete(plan)
+            db.session.commit()
+            return jsonify({'Plan': "deleted"})
+
+
+
+
+        @app.route("/delete_profile", methods=["POST"])
+        def delete_profile():
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})
+
+            profile=Profile.query.filter_by(user_id = check_id).first()
+            db.session.delete(profile)
+            db.session.commit()
+            return jsonify({'Profile': "deleted"})
+
+
+
+        
+        @app.route("/delete_meal", methods=["POST"])
+        def delete_meal():
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})
+
+            name = request.args.get('name')
+
+            meals=Meals.query.filter_by(user_id = check_id)
+            for m in meals:
+                if m.meal == name:
+                    x=1
+                    db.session.delete(m)
+            
+            if x == 1:
+                db.session.commit()
+                return jsonify({'Meals':"Deleted","Name":name})
+            else :
+                return jsonify({"Error":"Meal not found"})
+        
+
+
+
+
+        if create_db:
+            db.drop_all()
+            db.create_all()
         db.session.commit()
 
         return app
+
 
 if __name__ == '__main__':
     app = create_app()
