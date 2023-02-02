@@ -15,3 +15,4 @@ class User(db.Model):
 
     def verify_password(self, passw):
         return self.password==passw
+

@@ -6,3 +6,4 @@ class Plan(db.Model):
     g_weight = db.Column(db.String(200), nullable=False)
     g_time = db.Column(db.String(200), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    

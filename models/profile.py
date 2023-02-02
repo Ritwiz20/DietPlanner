@@ -8,3 +8,4 @@ class Profile(db.Model):
     height = db.Column(db.String(200), nullable=False)
     workout = db.Column(db.String(200), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    

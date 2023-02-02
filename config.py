@@ -14,3 +14,4 @@ my_db = create_engine(db_string)
 
 Session = sessionmaker(db)
 sess =  Session()
+
