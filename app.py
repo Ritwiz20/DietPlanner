@@ -18,7 +18,7 @@ load_dotenv(path.join(getcwd(), '.env'))
 
 check_id=0
 create_db=0
-
+total_calories=0
 
 def create_app():
     app = Flask(__name__)
@@ -227,18 +227,15 @@ def create_app():
                 calorie.append(cal)
                 time.append(int(m.time))
 
+            global total_calories
+            total_calories=cal
+
             goal=int(Plan.query.filter_by(user_id=check_id).first().g_calorie)
-            # x=Meals.plot_user(goal, calorie, time)
 
             calorie = np.array(calorie)
             time = np.array(time)
 
             mask = calorie>=goal
-
-            # plt.plot(time[mask], calorie[mask], color='red')
-            # plt.plot(time[~mask], calorie[~mask], color='blue')
-            # plt.scatter(time[mask], calorie[mask], color='red')
-            # plt.scatter(time[~mask], calorie[~mask], color='blue') 
 
             plt.plot(time,calorie)
             plt.scatter(time,calorie)
@@ -250,6 +247,52 @@ def create_app():
             plt.show()
             return jsonify({"Plot":'Graph'})
             
+
+
+
+
+        @app.route('/dashboard', methods=['GET'])
+        def dashboard():
+            if check_id == 0:
+                return jsonify({"Error":"Please log in to continue"})
+            
+            user = User.query.filter_by(id=check_id).first()
+            plan = Plan.query.filter_by(user_id=user.id).first()
+            profile = Profile.query.filter_by(user_id=user.id).first()
+            meal = Meals.query.filter_by(user_id=user.id).all()
+
+            plans=[]
+            meals=[]
+
+            user_dash =  {
+                "1.Name":user.name,
+                "2.Email":user.email,
+                "3.phone_number":user.phone_number,
+                "4.Height":profile.height,
+                "5.Weight":profile.weight,
+                "6.Age":profile.age,
+                "7.Worlout Level":profile.workout
+            }
+            
+            pl = {
+                "Target calorie per day": plan.g_calorie,
+                "Target weight": plan.g_weight,
+                "Target time": plan.g_time
+            }
+            plans.append(pl)
+
+            for m in meal:
+                meal_data = {
+                    "meal":m.meal,
+                    "calorie":m.calorie,
+                    "time":m.time
+                }
+                meals.append(meal_data)
+                
+            user_dash["8.plans"]=plans
+            user_dash["9.meals"]=meals
+            user_dash["Total Calories"]=total_calories
+            return jsonify(user_dash)
 
        
 
