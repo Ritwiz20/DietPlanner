@@ -1,5 +1,4 @@
 from config import db
-
 class Plan(db.Model):
     __tablename__ = 'plan'
     id = db.Column(db.Integer, primary_key=True)
